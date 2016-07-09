@@ -95,6 +95,8 @@ public class MockedClient implements ExchangeClient {
             }
             public void setCallback(ResponseCallback callback) {
             }
+            public ResponseCallback getCallback(){
+                return null;}
         };
     }
 

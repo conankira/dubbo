@@ -92,19 +92,21 @@ public class DefaultFuture implements ResponseFuture {
             long start = System.currentTimeMillis();
             lock.lock();
             try {
-                while (! isDone()) {
+                while (!isDone()) {
                     done.await(timeout, TimeUnit.MILLISECONDS);
-                    if (isDone() || System.currentTimeMillis() - start > timeout) {
+                    if (isDone()) {
+                        if (callback != null) {
+                            invokeCallback(callback);
+                        }
                         break;
+                    } else if (System.currentTimeMillis() - start > timeout) {
+                        throw new TimeoutException(sent > 0, channel, getTimeoutMessage(false));
                     }
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             } finally {
                 lock.unlock();
-            }
-            if (! isDone()) {
-                throw new TimeoutException(sent > 0, channel, getTimeoutMessage(false));
             }
         }
         return returnFromResponse();
@@ -122,23 +124,19 @@ public class DefaultFuture implements ResponseFuture {
         return response != null;
     }
 
+    public ResponseCallback getCallback(){
+        return this.callback;
+    }
+
     public void setCallback(ResponseCallback callback) {
-        if (isDone()) {
-            invokeCallback(callback);
-        } else {
-            boolean isdone = false;
+        if(!isDone()) {
             lock.lock();
-            try{
+            try {
                 if (!isDone()) {
                     this.callback = callback;
-                } else {
-                    isdone = true;
                 }
-            }finally {
+            } finally {
                 lock.unlock();
-            }
-            if (isdone){
-                invokeCallback(callback);
             }
         }
     }
@@ -259,9 +257,6 @@ public class DefaultFuture implements ResponseFuture {
             }
         } finally {
             lock.unlock();
-        }
-        if (callback != null) {
-            invokeCallback(callback);
         }
     }
 

@@ -44,6 +44,10 @@ public class SimpleFuture implements ResponseFuture {
         callback.done(value);
     }
 
+    public ResponseCallback getCallback() {
+        return null;
+    }
+
     public boolean isDone() {
         return true;
     }

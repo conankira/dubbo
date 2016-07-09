@@ -50,6 +50,13 @@ public interface ResponseFuture {
     void setCallback(ResponseCallback callback);
 
     /**
+     * get callback
+     *
+     * @return
+     */
+    ResponseCallback getCallback();
+
+    /**
      * check is done.
      * 
      * @return done or not.
