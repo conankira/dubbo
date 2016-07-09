@@ -141,7 +141,12 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         
         
         try {
-            return doInvoke(invocation);
+            Result res = doInvoke(invocation);
+            if(RpcResult.class.isInstance(res)){
+                RpcResult rpcResult = (RpcResult)res;
+                RpcContext.getContext().setNotifications(rpcResult.getNotifications());
+            }
+            return res;
         } catch (InvocationTargetException e) { // biz exception
             Throwable te = e.getTargetException();
             if (te == null) {

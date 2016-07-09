@@ -16,10 +16,13 @@
 
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
@@ -76,6 +79,12 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
         byte flag = in.readByte();
         switch (flag) {
             case DubboCodec.RESPONSE_NULL_VALUE:
+                try {
+                    setNotifications(decodeNotifications(in));
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                    throw new IOException(StringUtils.toString("Read invocation data failed.", e));
+                }
                 break;
             case DubboCodec.RESPONSE_VALUE:
                 try {
@@ -83,6 +92,9 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                     setValue(returnType == null || returnType.length == 0 ? in.readObject() :
                                  (returnType.length == 1 ? in.readObject((Class<?>) returnType[0])
                                      : in.readObject((Class<?>) returnType[0], returnType[1])));
+
+                    // decode followed attachments
+                    setNotifications(decodeNotifications(in));
                 } catch (ClassNotFoundException e) {
                     throw new IOException(StringUtils.toString("Read response data failed.", e));
                 }
@@ -101,6 +113,24 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
                 throw new IOException("Unknown result flag, expect '0' '1' '2', get " + flag);
         }
         return this;
+    }
+
+    private Map<String, String> decodeNotifications(ObjectInput in) throws IOException, ClassNotFoundException {
+        try{
+            Map<String, String> map = (Map<String, String>) in.readObject(Map.class);
+            Map<String, String> notifications = getNotifications();
+            if (map != null && map.size() > 0) {
+                if (notifications == null) {
+                    notifications = new HashMap<String, String>();
+                }
+                notifications.putAll(map);
+            }
+            return notifications;
+        } catch (EOFException e1) { // in case of receiving RPCResult of a older version provider
+            return null;
+        } catch (ClassNotFoundException e) {
+            throw new IOException(StringUtils.toString("Read invocation data failed.", e));
+        }
     }
 
     public void decode() throws Exception {

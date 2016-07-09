@@ -88,6 +88,8 @@ public class RpcContext {
 
     private final Map<String, String> attachments = new HashMap<String, String>();
 
+    private final Map<String, String> notifications = new HashMap<String, String>();
+
     private final Map<String, Object> values = new HashMap<String, Object>();
     
 	@Deprecated
@@ -433,9 +435,44 @@ public class RpcContext {
         }
         return this;
     }
-    
+
     public void clearAttachments() {
         this.attachments.clear();
+    }
+
+    public String getNotification(String key) {
+        return notifications.get(key);
+    }
+
+    public RpcContext setNotification(String key, String value) {
+        if (value == null) {
+            notifications.remove(key);
+        } else {
+            notifications.put(key, value);
+        }
+        return this;
+    }
+
+    public RpcContext removeNotification(String key) {
+        notifications.remove(key);
+        return this;
+    }
+
+    public Map<String, String> getNotifications() {
+        return notifications;
+    }
+
+
+    public RpcContext setNotifications(Map<String, String> notifications) {
+        this.notifications.clear();
+        if (notifications != null && notifications.size() > 0) {
+            this.notifications.putAll(notifications);
+        }
+        return this;
+    }
+
+    public void clearNotifications() {
+        this.notifications.clear();
     }
 
     /**

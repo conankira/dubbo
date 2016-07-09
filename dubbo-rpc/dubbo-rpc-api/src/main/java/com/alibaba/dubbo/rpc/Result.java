@@ -74,24 +74,43 @@ public interface Result {
 
 
     /**
-     * get attachments.
-     *
-     * @return attachments.
+     * @deprecated Replace to getNotifications()
+     * @see com.alibaba.dubbo.rpc.Result#getNotifications()
      */
+    @Deprecated
     Map<String, String> getAttachments();
 
     /**
-     * get attachment by key.
-     *
-     * @return attachment value.
+     * @deprecated Replace to getNotification(string)
      */
+    @Deprecated
     String getAttachment(String key);
 
     /**
-     * get attachment by key with default value.
+     * @deprecated Replace to getNotification(string, string)
+     */
+    @Deprecated
+    String getAttachment(String key, String defaultValue);
+
+    /**
+     * get notifications.
+     *
+     * @return attachments.
+     */
+    Map<String, String> getNotifications();
+
+    /**
+     * get notification by key.
      *
      * @return attachment value.
      */
-    String getAttachment(String key, String defaultValue);
+    String getNotification(String key);
+
+    /**
+     * get notifications by key with default value.
+     *
+     * @return attachment value.
+     */
+    String getNotification(String key, String defaultValue);
 
 }

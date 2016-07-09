@@ -15,9 +15,6 @@
  */
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
@@ -39,6 +36,11 @@ import com.alibaba.dubbo.remoting.transport.CodecSupport;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Result;
 import com.alibaba.dubbo.rpc.RpcInvocation;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInvocationArgument;
 
@@ -183,7 +185,17 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
         for (int i = 0; i < args.length; i++){
             out.writeObject(encodeInvocationArgument(channel, inv, i));
         }
-        out.writeObject(inv.getAttachments());
+
+        // bug fix: ASYNC flag should not pass to dubbo provider, otherwise the provider process will
+        // be an ASYNC dubbo consumer by mistake
+        Map<String, String> attachments = inv.getAttachments();
+        Map<String, String> attachmentsWithoutASYNC = new HashMap<String, String>(attachments.size());
+        for (String key : attachments.keySet()) {
+            if (!Constants.ASYNC_KEY.equals(key)) {
+                attachmentsWithoutASYNC.put(key, attachments.get(key));
+            }
+        }
+        out.writeObject(attachmentsWithoutASYNC);
     }
 
     @Override
@@ -195,9 +207,11 @@ public class DubboCodec extends ExchangeCodec implements Codec2 {
             Object ret = result.getValue();
             if (ret == null) {
                 out.writeByte(RESPONSE_NULL_VALUE);
+                out.writeObject(result.getNotifications());
             } else {
                 out.writeByte(RESPONSE_VALUE);
                 out.writeObject(ret);
+                out.writeObject(result.getNotifications());
             }
         } else {
             out.writeByte(RESPONSE_WITH_EXCEPTION);

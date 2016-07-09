@@ -35,6 +35,8 @@ public class RpcResult implements Result, Serializable {
 
     private Map<String, String>      attachments = new HashMap<String, String>();
 
+    private Map<String, String>      notifications = new HashMap<String, String>();
+
     public RpcResult(){
     }
 
@@ -91,14 +93,26 @@ public class RpcResult implements Result, Serializable {
         return exception != null;
     }
 
+    /**
+     * Depricated, use Notification instead
+     */
+    @Deprecated
     public Map<String, String> getAttachments() {
         return attachments;
     }
 
+    /**
+     * Depricated, use Notification instead
+     */
+    @Deprecated
     public String getAttachment(String key) {
         return attachments.get(key);
     }
 
+    /**
+     * Depricated, use Notification instead
+     */
+    @Deprecated
     public String getAttachment(String key, String defaultValue) {
         String result = attachments.get(key);
         if (result == null || result.length() == 0) {
@@ -107,14 +121,45 @@ public class RpcResult implements Result, Serializable {
         return result;
     }
 
+    /**
+     * Depricated, use Notification instead
+     */
+    @Deprecated
     public void setAttachments(Map<String, String> map) {
         if (map != null && map.size() > 0) {
             attachments.putAll(map);
         }
     }
 
+    @Deprecated
     public void setAttachment(String key, String value) {
         attachments.put(key, value);
+    }
+
+    public Map<String, String> getNotifications() {
+        return notifications;
+    }
+
+    public String getNotification(String key) {
+        return notifications.get(key);
+    }
+
+    public String getNotification(String key, String defaultValue) {
+        String result = notifications.get(key);
+        if (result == null || result.length() == 0) {
+            result = defaultValue;
+        }
+        return result;
+    }
+
+    public void setNotifications(Map<String, String> map) {
+        if (map != null && map.size() > 0) {
+            notifications.putAll(map);
+        }
+    }
+
+    public void setNotification(String key, String value) {
+        notifications.put(key, value);
     }
 
     @Override
